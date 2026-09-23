@@ -1,0 +1,46 @@
+spring:
+  config:
+    import: "optional:file:.env[.properties]"
+
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    # ─── HikariCP: optimizado para BD remota en cloud (Neon free-tier) ───────
+    hikari:
+      # Pool pequeño: Neon pooler limita conexiones concurrentes en plan free
+      maximum-pool-size: 3
+      minimum-idle: 1
+      # 30s para obtener una conexión del pool antes de fallar
+      connection-timeout: 30000
+      # Keepalive cada 30s para evitar cierre por inactividad SSL de Neon
+      keepalive-time: 30000
+      # Cerrar conexiones idle rápido (2 min) — Neon las mata antes de los 10 min
+      idle-timeout: 120000
+      # Reciclar conexiones cada 5 min — evita "This connection has been closed"
+      max-lifetime: 300000
+      # Validar rápido si la conexión sigue viva
+      validation-timeout: 3000
+      connection-test-query: SELECT 1
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        # Formatea el SQL en los logs para facilitar el diagnóstico
+        format_sql: true
+    # ⚠️ CRÍTICO: open-in-view=true (default) mantiene la transacción BD abierta
+    # durante toda la serialización HTTP → agota el pool → timeouts en cadena.
+    open-in-view: false
+    show-sql: false   # Cambia a true temporalmente si necesitas ver las queries
+
+  flyway:
+    enabled: true
+
+logging:
+  level:
+    # Activa esto solo en desarrollo para ver las queries SQL lentas
+    org.hibernate.SQL: WARN
+    org.hibernate.orm.jdbc.bind: WARN
