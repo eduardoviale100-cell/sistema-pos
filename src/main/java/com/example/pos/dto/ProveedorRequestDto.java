@@ -2,17 +2,19 @@ package com.example.pos.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
 public class ProveedorRequestDto {
 
-    @NotBlank(message = "El nombre del proveedor es obligatorio")
-    @Size(max = 120, message = "El nombre no puede superar los 120 caracteres")
+    @NotBlank(message = "La razón social no puede estar vacía")
+    @Size(min = 3, max = 150, message = "La razón social debe tener al menos 3 caracteres")
     private String nombre;
 
-    @Size(max = 20, message = "El RUC o DNI no puede superar los 20 caracteres")
+    @NotBlank(message = "El RUC es obligatorio")
+    @Pattern(regexp = "^(10|20)\\d{9}$", message = "El RUC debe tener 11 dígitos y empezar con 10 o 20")
     private String rucDni;
 
     // Alias compatible con frontends que envían rfc
@@ -21,13 +23,17 @@ public class ProveedorRequestDto {
     // Contacto opcional
     private String contacto;
 
-    @Size(max = 20, message = "El teléfono no puede superar los 20 caracteres")
+    @NotBlank(message = "El celular es obligatorio")
+    @Pattern(regexp = "^9\\d{8}$", message = "El celular debe tener 9 dígitos y empezar con 9")
     private String telefono;
 
-    @Email(message = "Debe proporcionar un correo electrónico válido")
+    @NotBlank(message = "El correo electrónico es obligatorio")
+    @Email(message = "Debe ingresar un correo electrónico válido")
     @Size(max = 100, message = "El email no puede superar los 100 caracteres")
     private String email;
 
+    @NotBlank(message = "La dirección es obligatoria")
+    @Size(min = 5, max = 200, message = "La dirección debe tener al menos 5 caracteres")
     private String direccion;
 
     public String getRucDni() {
