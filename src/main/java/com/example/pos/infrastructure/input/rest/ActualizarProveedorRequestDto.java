@@ -15,6 +15,9 @@ public class ActualizarProveedorRequestDto {
     @Size(min = 3, max = 120, message = "La razón social debe tener entre 3 y 120 caracteres.")
     private String nombre;
 
+    @com.fasterxml.jackson.annotation.JsonAlias({"documento", "ruc_dni", "ruc"})
+    private String rucDni;
+
     @Pattern(regexp = "^$|^[0-9+() -]{6,20}$", message = "El teléfono contiene un formato inválido.")
     private String telefono;
 
@@ -41,6 +44,22 @@ public class ActualizarProveedorRequestDto {
 
     public void setNombre(String nombre) {
         this.nombre = nombre;
+    }
+
+    public String getRucDni() {
+        return rucDni;
+    }
+
+    public void setRucDni(String rucDni) {
+        this.rucDni = rucDni;
+    }
+
+    public String getDocumento() {
+        return rucDni;
+    }
+
+    public void setDocumento(String documento) {
+        this.rucDni = documento;
     }
 
     public String getTelefono() {

@@ -42,6 +42,8 @@ class VentaServiceTest {
     private MetodoPagoRepository metodoPagoRepository;
     @Mock
     private MovimientoInventarioRepository movimientoInventarioRepository;
+    @Mock
+    private MovimientoCajaRepository movimientoCajaRepository;
 
     @InjectMocks
     private VentaService ventaService;
@@ -161,6 +163,9 @@ class VentaServiceTest {
 
         // Verificar registro del movimiento de inventario SALIDA
         verify(movimientoInventarioRepository, times(1)).save(any(MovimientoInventario.class));
+
+        // Verificar registro del movimiento de auditoría en caja por cobro en efectivo
+        verify(movimientoCajaRepository, times(1)).save(any(MovimientoCaja.class));
     }
 
     @Test

@@ -7,6 +7,10 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
+import com.example.pos.domain.model.CategoriaDomain;
+import com.example.pos.domain.model.MarcaDomain;
+import com.example.pos.domain.model.ProveedorDomain;
+
 /**
  * Adaptador de Persistencia (Secondary/Driven Adapter) para el módulo de Producto.
  *
@@ -26,12 +30,22 @@ import java.util.Optional;
 public class ProductoRepositoryAdapter implements ProductoRepositoryPort {
 
     private final SpringDataProductoRepository springDataProductoRepository;
+    private final SpringDataCategoriaRepository springDataCategoriaRepository;
+    private final SpringDataMarcaRepository springDataMarcaRepository;
+    private final SpringDataProveedorRepository springDataProveedorRepository;
 
     /**
      * Inyección por constructor del repositorio de Spring Data JPA.
      */
-    public ProductoRepositoryAdapter(SpringDataProductoRepository springDataProductoRepository) {
+    public ProductoRepositoryAdapter(
+            SpringDataProductoRepository springDataProductoRepository,
+            SpringDataCategoriaRepository springDataCategoriaRepository,
+            SpringDataMarcaRepository springDataMarcaRepository,
+            SpringDataProveedorRepository springDataProveedorRepository) {
         this.springDataProductoRepository = springDataProductoRepository;
+        this.springDataCategoriaRepository = springDataCategoriaRepository;
+        this.springDataMarcaRepository = springDataMarcaRepository;
+        this.springDataProveedorRepository = springDataProveedorRepository;
     }
 
     // =========================================================================
@@ -41,6 +55,19 @@ public class ProductoRepositoryAdapter implements ProductoRepositoryPort {
     @Override
     public ProductoDomain guardar(ProductoDomain producto) {
         ProductoEntity entity       = toEntity(producto);
+        
+        // Cargar las relaciones antes de guardar para que el objeto persistido
+        // las devuelva correctamente en la serialización hacia el frontend
+        if (entity.getCategoriaId() != null) {
+            springDataCategoriaRepository.findById(entity.getCategoriaId()).ifPresent(entity::setCategoria);
+        }
+        if (entity.getMarcaId() != null) {
+            springDataMarcaRepository.findById(entity.getMarcaId()).ifPresent(entity::setMarca);
+        }
+        if (entity.getProveedorId() != null) {
+            springDataProveedorRepository.findById(entity.getProveedorId()).ifPresent(entity::setProveedor);
+        }
+
         ProductoEntity entityGuardada = springDataProductoRepository.save(entity);
         return toDomain(entityGuardada);
     }
@@ -81,15 +108,46 @@ public class ProductoRepositoryAdapter implements ProductoRepositoryPort {
         if (entity == null) {
             return null;
         }
-        return new ProductoDomain(
+        ProductoDomain domain = new ProductoDomain(
                 entity.getId(),
                 entity.getCodigoBarras(),
                 entity.getNombre(),
                 entity.getDescripcion(),
+                entity.getPrecioCompra(),
                 entity.getPrecioVenta(),
+                entity.getCategoriaId(),
+                entity.getMarcaId(),
+                entity.getProveedorId(),
                 entity.getStock(),
                 entity.getEstado()
         );
+
+        if (entity.getCategoria() != null) {
+            domain.setCategoria(new CategoriaDomain(
+                entity.getCategoria().getId(),
+                entity.getCategoria().getNombre(),
+                entity.getCategoria().getDescripcion()
+            ));
+        }
+        if (entity.getMarca() != null) {
+            domain.setMarca(new MarcaDomain(
+                entity.getMarca().getId(),
+                entity.getMarca().getNombre(),
+                entity.getMarca().getDescripcion()
+            ));
+        }
+        if (entity.getProveedor() != null) {
+            domain.setProveedor(new ProveedorDomain(
+                entity.getProveedor().getId(),
+                entity.getProveedor().getNombre(),
+                entity.getProveedor().getRucDni(),
+                entity.getProveedor().getTelefono(),
+                entity.getProveedor().getEmail(),
+                entity.getProveedor().getDireccion()
+            ));
+        }
+
+        return domain;
     }
 
     /**
@@ -105,7 +163,11 @@ public class ProductoRepositoryAdapter implements ProductoRepositoryPort {
                 domain.getNombre(),
                 domain.getCodigo(),
                 domain.getDescripcion(),
+                domain.getPrecioCompra(),
                 domain.getPrecioVenta(),
+                domain.getCategoriaId(),
+                domain.getMarcaId(),
+                domain.getProveedorId(),
                 domain.getStock(),
                 domain.getEstado()
         );

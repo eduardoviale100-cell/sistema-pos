@@ -42,6 +42,9 @@ public class VentaService {
     @Autowired
     private MovimientoInventarioRepository movimientoInventarioRepository;
 
+    @Autowired
+    private MovimientoCajaRepository movimientoCajaRepository;
+
     private void inicializarColecciones(List<Venta> ventas) {
         if (ventas == null || ventas.isEmpty()) return;
         for (Venta v : ventas) {
@@ -225,13 +228,23 @@ public class VentaService {
 
         venta.setPagos(listaPagos);
 
-        // 7. Si hubo pagos en efectivo, registrar ingreso en la sesión de caja
+        // 7. Si hubo pagos en efectivo, registrar ingreso en la sesión de caja y crear movimiento de auditoría
         if (totalEfectivo.compareTo(BigDecimal.ZERO) > 0) {
             BigDecimal esperadoActual = sesion.getMontoEsperado() != null
                     ? sesion.getMontoEsperado()
                     : sesion.getMontoInicial();
             sesion.setMontoEsperado(esperadoActual.add(totalEfectivo));
             sesionCajaRepository.save(sesion);
+
+            MovimientoCaja movCaja = new MovimientoCaja();
+            movCaja.setSesionCaja(sesion);
+            movCaja.setUsuario(usuario);
+            movCaja.setTipoMovimiento("INGRESO");
+            movCaja.setMonto(totalEfectivo);
+            movCaja.setFecha(LocalDateTime.now());
+            movCaja.setReferencia(venta.getCodigoFactura());
+            movCaja.setObservaciones("Cobro en efectivo - Venta " + venta.getCodigoFactura());
+            movimientoCajaRepository.save(movCaja);
         }
 
         Venta ventaGuardada = ventaRepository.save(venta);

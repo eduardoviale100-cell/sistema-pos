@@ -81,7 +81,11 @@ public class ProductoController {
                 dto.getCodigo(),
                 dto.getNombre(),
                 dto.getDescripcion(),
-                dto.getPrecioVenta()
+                dto.getPrecioCompra(),
+                dto.getPrecioVenta(),
+                dto.getCategoriaId(),
+                dto.getMarcaId(),
+                dto.getProveedorId()
         );
 
         ProductoDomain nuevoProducto = crearProductoUseCase.ejecutar(command);
@@ -141,9 +145,13 @@ public class ProductoController {
         ActualizarProductoCommand command = new ActualizarProductoCommand(
                 dto.getNombre(),
                 dto.getDescripcion(),
+                dto.getPrecioCompra(),
                 dto.getPrecioVenta(),
                 dto.getStock(),
-                dto.getEstado()
+                dto.getEstado(),
+                dto.getCategoriaId(),
+                dto.getMarcaId(),
+                dto.getProveedorId()
         );
 
         ProductoDomain productoActualizado = actualizarProductoUseCase.ejecutar(id, command);

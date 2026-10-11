@@ -29,11 +29,11 @@ public class UsuarioEntity {
     private String nombre;
 
     /** Nombre de usuario único para inicio de sesión. */
-    @Column(nullable = false, unique = true, length = 50)
+    @Column(name = "usuario", nullable = false, unique = true, length = 50)
     private String username;
 
     /** Contraseña almacenada como hash (BCrypt). */
-    @Column(name = "password_hash", nullable = false, length = 255)
+    @Column(name = "contraseña", nullable = false, length = 255)
     private String passwordHash;
 
     /** Rol del usuario en el sistema (ADMIN, VENDEDOR, CAJERO). */

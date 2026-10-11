@@ -27,9 +27,18 @@ public class ProductoDomain {
     private String codigo;
     private String nombre;
     private String descripcion;
+    private BigDecimal precioCompra;
     private BigDecimal precioVenta;
+    private Long categoriaId;
+    private Long marcaId;
+    private Long proveedorId;
     private Integer stock;
     private Boolean estado;
+
+    // Relaciones para serialización hacia el frontend
+    private CategoriaDomain categoria;
+    private MarcaDomain marca;
+    private ProveedorDomain proveedor;
 
     /**
      * Constructor vacío requerido para la reconstitución desde la capa de persistencia
@@ -38,6 +47,7 @@ public class ProductoDomain {
     public ProductoDomain() {
         this.estado = true;
         this.stock  = 0;
+        this.precioCompra = BigDecimal.ZERO;
     }
 
     /**
@@ -50,35 +60,43 @@ public class ProductoDomain {
      * @param precioVenta Precio de venta (debe ser >= 0).
      */
     public ProductoDomain(String codigo, String nombre, String descripcion, BigDecimal precioVenta) {
-        this(null, codigo, nombre, descripcion, precioVenta, 0, true);
+        this(null, codigo, nombre, descripcion, BigDecimal.ZERO, precioVenta, null, null, null, 0, true);
+    }
+
+    public ProductoDomain(String codigo, String nombre, String descripcion, BigDecimal precioCompra, BigDecimal precioVenta,
+                          Long categoriaId, Long marcaId, Long proveedorId) {
+        this(null, codigo, nombre, descripcion, precioCompra, precioVenta, categoriaId, marcaId, proveedorId, 0, true);
+    }
+
+    public ProductoDomain(Long id, String codigo, String nombre, String descripcion,
+                          BigDecimal precioVenta, Integer stock, Boolean estado) {
+        this(id, codigo, nombre, descripcion, BigDecimal.ZERO, precioVenta, null, null, null, stock, estado);
     }
 
     /**
      * Constructor completo para reconstitución desde la capa de persistencia o para
      * pruebas unitarias con control total sobre el estado interno.
-     *
-     * @param id          Identificador único generado por la BD (puede ser nulo si es nuevo).
-     * @param codigo      Código único del producto.
-     * @param nombre      Nombre del producto.
-     * @param descripcion Descripción ampliada (puede ser nula).
-     * @param precioVenta Precio de venta.
-     * @param stock       Cantidad en inventario.
-     * @param estado      Estado activo/inactivo.
      */
     public ProductoDomain(Long id, String codigo, String nombre, String descripcion,
-                          BigDecimal precioVenta, Integer stock, Boolean estado) {
+                          BigDecimal precioCompra, BigDecimal precioVenta,
+                          Long categoriaId, Long marcaId, Long proveedorId,
+                          Integer stock, Boolean estado) {
         validarCodigo(codigo);
         validarNombre(nombre);
         validarPrecioVenta(precioVenta);
         validarStock(stock);
 
-        this.id          = id;
-        this.codigo      = codigo.trim();
-        this.nombre      = nombre.trim();
-        this.descripcion = descripcion != null ? descripcion.trim() : null;
-        this.precioVenta = precioVenta;
-        this.stock       = stock != null ? stock : 0;
-        this.estado      = estado != null ? estado : true;
+        this.id           = id;
+        this.codigo       = codigo.trim();
+        this.nombre       = nombre.trim();
+        this.descripcion  = descripcion != null ? descripcion.trim() : null;
+        this.precioCompra = precioCompra != null ? precioCompra : BigDecimal.ZERO;
+        this.precioVenta  = precioVenta;
+        this.categoriaId  = categoriaId;
+        this.marcaId      = marcaId;
+        this.proveedorId  = proveedorId;
+        this.stock        = stock  != null ? stock  : 0;
+        this.estado       = estado != null ? estado : true;
     }
 
     // =========================================================================
@@ -221,6 +239,16 @@ public class ProductoDomain {
         this.codigo = codigo.trim();
     }
 
+    public String getCodigoBarras() {
+        return codigo;
+    }
+
+    public void setCodigoBarras(String codigoBarras) {
+        if (codigoBarras != null && !codigoBarras.isBlank()) {
+            this.codigo = codigoBarras.trim();
+        }
+    }
+
     public String getNombre() {
         return nombre;
     }
@@ -238,6 +266,14 @@ public class ProductoDomain {
         this.descripcion = descripcion != null ? descripcion.trim() : null;
     }
 
+    public BigDecimal getPrecioCompra() {
+        return precioCompra != null ? precioCompra : BigDecimal.ZERO;
+    }
+
+    public void setPrecioCompra(BigDecimal precioCompra) {
+        this.precioCompra = precioCompra != null ? precioCompra : BigDecimal.ZERO;
+    }
+
     public BigDecimal getPrecioVenta() {
         return precioVenta;
     }
@@ -245,6 +281,30 @@ public class ProductoDomain {
     public void setPrecioVenta(BigDecimal precioVenta) {
         validarPrecioVenta(precioVenta);
         this.precioVenta = precioVenta;
+    }
+
+    public Long getCategoriaId() {
+        return categoriaId;
+    }
+
+    public void setCategoriaId(Long categoriaId) {
+        this.categoriaId = categoriaId;
+    }
+
+    public Long getMarcaId() {
+        return marcaId;
+    }
+
+    public void setMarcaId(Long marcaId) {
+        this.marcaId = marcaId;
+    }
+
+    public Long getProveedorId() {
+        return proveedorId;
+    }
+
+    public void setProveedorId(Long proveedorId) {
+        this.proveedorId = proveedorId;
     }
 
     public Integer getStock() {
@@ -262,6 +322,30 @@ public class ProductoDomain {
 
     public void setEstado(Boolean estado) {
         this.estado = estado != null ? estado : true;
+    }
+
+    public CategoriaDomain getCategoria() {
+        return categoria;
+    }
+
+    public void setCategoria(CategoriaDomain categoria) {
+        this.categoria = categoria;
+    }
+
+    public MarcaDomain getMarca() {
+        return marca;
+    }
+
+    public void setMarca(MarcaDomain marca) {
+        this.marca = marca;
+    }
+
+    public ProveedorDomain getProveedor() {
+        return proveedor;
+    }
+
+    public void setProveedor(ProveedorDomain proveedor) {
+        this.proveedor = proveedor;
     }
 
     // =========================================================================

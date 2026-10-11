@@ -1,7 +1,9 @@
 package com.example.pos.application.usecase;
 
 import com.example.pos.domain.exception.ProductoYaExisteException;
+import com.example.pos.domain.model.InventarioDomain;
 import com.example.pos.domain.model.ProductoDomain;
+import com.example.pos.domain.repository.InventarioRepositoryPort;
 import com.example.pos.domain.repository.ProductoRepositoryPort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
  *       lanzando {@link ProductoYaExisteException} si ya existe.</li>
  *   <li>Instanciar el modelo de dominio puro (que aplica sus propias invariantes internas).</li>
  *   <li>Persistir y retornar el producto guardado mediante el puerto de salida.</li>
+ *   <li>Crear automáticamente un registro de inventario inicial (stock 0) para el producto.</li>
  * </ol>
  * </p>
  *
@@ -26,12 +29,15 @@ import org.springframework.transaction.annotation.Transactional;
 public class CrearProductoUseCase {
 
     private final ProductoRepositoryPort productoRepositoryPort;
+    private final InventarioRepositoryPort inventarioRepositoryPort;
 
     /**
-     * Inyección por constructor del puerto de salida (Driven Port).
+     * Inyección por constructor de los puertos de salida (Driven Ports).
      */
-    public CrearProductoUseCase(ProductoRepositoryPort productoRepositoryPort) {
+    public CrearProductoUseCase(ProductoRepositoryPort productoRepositoryPort,
+                                InventarioRepositoryPort inventarioRepositoryPort) {
         this.productoRepositoryPort = productoRepositoryPort;
+        this.inventarioRepositoryPort = inventarioRepositoryPort;
     }
 
     /**
@@ -60,10 +66,26 @@ public class CrearProductoUseCase {
                 codigoNormalizado,
                 command.nombre(),
                 command.descripcion(),
-                command.precioVenta()
+                command.precioCompra(),
+                command.precioVenta(),
+                command.categoriaId(),
+                command.marcaId(),
+                command.proveedorId()
         );
 
-        // 3. Persistir y retornar mediante el puerto
-        return productoRepositoryPort.guardar(nuevoProducto);
+        // 3. Persistir el producto
+        ProductoDomain productoGuardado = productoRepositoryPort.guardar(nuevoProducto);
+
+        // 4. Crear automáticamente el registro de inventario inicial (stock 0, mínimo 5)
+        InventarioDomain inventarioInicial = new InventarioDomain(
+                productoGuardado.getId(),
+                productoGuardado.getNombre(),
+                productoGuardado.getCodigoBarras(),
+                0,  // stock actual inicial
+                5   // stock mínimo por defecto
+        );
+        inventarioRepositoryPort.guardar(inventarioInicial);
+
+        return productoGuardado;
     }
 }

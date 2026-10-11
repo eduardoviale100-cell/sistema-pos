@@ -16,6 +16,7 @@ public class ProveedorRequestDto {
 
     @NotBlank(message = "El RUC/DNI del proveedor es obligatorio.")
     @Size(min = 8, max = 20, message = "El documento fiscal debe tener entre 8 y 20 caracteres.")
+    @com.fasterxml.jackson.annotation.JsonAlias({"documento", "ruc_dni", "ruc"})
     private String rucDni;
 
     @Pattern(regexp = "^$|^[0-9+() -]{6,20}$", message = "El teléfono contiene un formato inválido.")
@@ -53,6 +54,14 @@ public class ProveedorRequestDto {
 
     public void setRucDni(String rucDni) {
         this.rucDni = rucDni;
+    }
+
+    public String getDocumento() {
+        return rucDni;
+    }
+
+    public void setDocumento(String documento) {
+        this.rucDni = documento;
     }
 
     public String getTelefono() {

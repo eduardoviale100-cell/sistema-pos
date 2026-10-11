@@ -1,8 +1,10 @@
 package com.example.pos.infrastructure.output.persistence;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -17,6 +19,12 @@ import java.util.Optional;
  */
 @Repository
 public interface SpringDataProductoRepository extends JpaRepository<ProductoEntity, Long> {
+
+    @EntityGraph(attributePaths = {"categoria", "marca", "proveedor"})
+    List<ProductoEntity> findAll();
+
+    @EntityGraph(attributePaths = {"categoria", "marca", "proveedor"})
+    Optional<ProductoEntity> findById(Long id);
 
     /**
      * Busca una entidad de producto por su código de barras o código interno.

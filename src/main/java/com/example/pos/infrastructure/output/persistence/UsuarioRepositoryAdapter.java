@@ -23,7 +23,8 @@ public class UsuarioRepositoryAdapter implements UsuarioRepositoryPort {
 
     // ─── Mappers ───────────────────────────────────────────────────────────────
 
-    private UsuarioDomain toDomain(UsuarioEntity entity) {
+    public UsuarioDomain toDomain(UsuarioEntity entity) {
+        if (entity == null) return null;
         return new UsuarioDomain(
                 entity.getId(),
                 entity.getNombre(),
@@ -36,13 +37,14 @@ public class UsuarioRepositoryAdapter implements UsuarioRepositoryPort {
         );
     }
 
-    private UsuarioEntity toEntity(UsuarioDomain domain) {
+    public UsuarioEntity toEntity(UsuarioDomain domain) {
+        if (domain == null) return null;
         return UsuarioEntity.builder()
                 .id(domain.getId())
                 .nombre(domain.getNombre())
                 .username(domain.getUsername())
                 .passwordHash(domain.getPasswordHash())
-                .rol(domain.getRol().name())
+                .rol(domain.getRol() != null ? domain.getRol().name() : "VENDEDOR")
                 .activo(domain.getActivo())
                 .fechaCreacion(domain.getFechaCreacion())
                 .fechaModificacion(domain.getFechaModificacion())

@@ -154,6 +154,7 @@ public class UsuarioDomain {
     }
 
     public String getUsername() { return username; }
+    public String getUsuario() { return username; }
     public void setUsername(String username) {
         validarUsername(username);
         this.username = username.trim().toLowerCase();

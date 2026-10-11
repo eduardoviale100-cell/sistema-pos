@@ -44,8 +44,32 @@ public class ProductoEntity {
     @Column(columnDefinition = "TEXT")
     private String descripcion;
 
+    @Column(name = "precio_compra", precision = 10, scale = 2)
+    private BigDecimal precioCompra = BigDecimal.ZERO;
+
     @Column(name = "precio_venta", nullable = false, precision = 10, scale = 2)
     private BigDecimal precioVenta;
+
+    @Column(name = "categoria_id")
+    private Long categoriaId;
+
+    @Column(name = "marca_id")
+    private Long marcaId;
+
+    @Column(name = "proveedor_id")
+    private Long proveedorId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "categoria_id", insertable = false, updatable = false)
+    private CategoriaEntity categoria;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "marca_id", insertable = false, updatable = false)
+    private MarcaEntity marca;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "proveedor_id", insertable = false, updatable = false)
+    private ProveedorEntity proveedor;
 
     /**
      * Stock actual del producto. Se gestiona directamente en este módulo para
@@ -70,12 +94,18 @@ public class ProductoEntity {
      * mapear desde el modelo de dominio hacia la entidad JPA.
      */
     public ProductoEntity(Long id, String nombre, String codigoBarras, String descripcion,
-                          BigDecimal precioVenta, Integer stock, Boolean estado) {
+                          BigDecimal precioCompra, BigDecimal precioVenta,
+                          Long categoriaId, Long marcaId, Long proveedorId,
+                          Integer stock, Boolean estado) {
         this.id           = id;
         this.nombre       = nombre;
         this.codigoBarras = codigoBarras;
         this.descripcion  = descripcion;
+        this.precioCompra = precioCompra != null ? precioCompra : BigDecimal.ZERO;
         this.precioVenta  = precioVenta;
+        this.categoriaId  = categoriaId;
+        this.marcaId      = marcaId;
+        this.proveedorId  = proveedorId;
         this.stock        = stock  != null ? stock  : 0;
         this.estado       = estado != null ? estado : true;
     }
@@ -116,12 +146,68 @@ public class ProductoEntity {
         this.descripcion = descripcion;
     }
 
+    public BigDecimal getPrecioCompra() {
+        return precioCompra;
+    }
+
+    public void setPrecioCompra(BigDecimal precioCompra) {
+        this.precioCompra = precioCompra;
+    }
+
     public BigDecimal getPrecioVenta() {
         return precioVenta;
     }
 
     public void setPrecioVenta(BigDecimal precioVenta) {
         this.precioVenta = precioVenta;
+    }
+
+    public Long getCategoriaId() {
+        return categoriaId;
+    }
+
+    public void setCategoriaId(Long categoriaId) {
+        this.categoriaId = categoriaId;
+    }
+
+    public Long getMarcaId() {
+        return marcaId;
+    }
+
+    public void setMarcaId(Long marcaId) {
+        this.marcaId = marcaId;
+    }
+
+    public Long getProveedorId() {
+        return proveedorId;
+    }
+
+    public void setProveedorId(Long proveedorId) {
+        this.proveedorId = proveedorId;
+    }
+
+    public CategoriaEntity getCategoria() {
+        return categoria;
+    }
+
+    public void setCategoria(CategoriaEntity categoria) {
+        this.categoria = categoria;
+    }
+
+    public MarcaEntity getMarca() {
+        return marca;
+    }
+
+    public void setMarca(MarcaEntity marca) {
+        this.marca = marca;
+    }
+
+    public ProveedorEntity getProveedor() {
+        return proveedor;
+    }
+
+    public void setProveedor(ProveedorEntity proveedor) {
+        this.proveedor = proveedor;
     }
 
     public Integer getStock() {

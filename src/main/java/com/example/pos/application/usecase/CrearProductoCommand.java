@@ -14,16 +14,15 @@ public record CrearProductoCommand(
         String codigo,
         String nombre,
         String descripcion,
-        BigDecimal precioVenta
+        BigDecimal precioCompra,
+        BigDecimal precioVenta,
+        Long categoriaId,
+        Long marcaId,
+        Long proveedorId
 ) {
-    /**
-     * Constructor compacto con normalización defensiva de cadenas.
-     * Garantiza que los valores de texto lleguen sin espacios redundantes al caso de uso.
-     */
     public CrearProductoCommand {
         codigo      = codigo      != null ? codigo.trim()      : null;
         nombre      = nombre      != null ? nombre.trim()      : null;
         descripcion = descripcion != null ? descripcion.trim() : null;
-        // precioVenta es BigDecimal, no requiere trim
     }
 }

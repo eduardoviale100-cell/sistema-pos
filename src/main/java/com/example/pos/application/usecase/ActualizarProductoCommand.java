@@ -12,13 +12,14 @@ import java.math.BigDecimal;
 public record ActualizarProductoCommand(
         String nombre,
         String descripcion,
+        BigDecimal precioCompra,
         BigDecimal precioVenta,
         Integer stock,
-        Boolean estado
+        Boolean estado,
+        Long categoriaId,
+        Long marcaId,
+        Long proveedorId
 ) {
-    /**
-     * Constructor compacto para sanitizar cadenas de texto.
-     */
     public ActualizarProductoCommand {
         nombre      = nombre != null ? nombre.trim() : null;
         descripcion = descripcion != null ? descripcion.trim() : null;

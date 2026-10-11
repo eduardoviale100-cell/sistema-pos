@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
  * Desacoplada del modelo de dominio MetodoPagoDomain.
  */
 @Entity
-@Table(name = "metodo_pago")
+@Table(name = "metodos_pago")
 @Data
 @Builder
 @NoArgsConstructor

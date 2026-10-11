@@ -45,6 +45,22 @@ public class ActualizarProductoUseCase {
 
         producto.actualizarDatos(command.nombre(), command.descripcion(), command.precioVenta());
 
+        if (command.precioCompra() != null) {
+            producto.setPrecioCompra(command.precioCompra());
+        }
+
+        if (command.categoriaId() != null) {
+            producto.setCategoriaId(command.categoriaId());
+        }
+
+        if (command.marcaId() != null) {
+            producto.setMarcaId(command.marcaId());
+        }
+
+        if (command.proveedorId() != null) {
+            producto.setProveedorId(command.proveedorId());
+        }
+
         if (command.stock() != null) {
             producto.setStock(command.stock());
         }

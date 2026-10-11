@@ -126,6 +126,10 @@ public class ClienteDomain {
         return rucDni;
     }
 
+    public String getDocumento() {
+        return rucDni;
+    }
+
     public void setRucDni(String rucDni) {
         validarRucDni(rucDni);
         this.rucDni = rucDni.trim();

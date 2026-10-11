@@ -21,6 +21,9 @@ public class ActualizarClienteRequestDto {
     @Size(min = 3, max = 120, message = "El nombre debe tener entre 3 y 120 caracteres.")
     private String nombre;
 
+    @com.fasterxml.jackson.annotation.JsonAlias({"documento", "ruc_dni"})
+    private String rucDni;
+
     @Pattern(regexp = "^$|^9\\d{8}$", message = "El teléfono debe ser un celular válido de 9 dígitos que comience con 9.")
     private String telefono;
 
@@ -57,6 +60,22 @@ public class ActualizarClienteRequestDto {
 
     public void setNombre(String nombre) {
         this.nombre = nombre;
+    }
+
+    public String getRucDni() {
+        return rucDni;
+    }
+
+    public void setRucDni(String rucDni) {
+        this.rucDni = rucDni;
+    }
+
+    public String getDocumento() {
+        return rucDni;
+    }
+
+    public void setDocumento(String documento) {
+        this.rucDni = documento;
     }
 
     public String getTelefono() {
