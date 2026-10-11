@@ -2,21 +2,18 @@ package com.example.pos.application.usecase;
 
 import com.example.pos.domain.exception.VentaNoEncontradaException;
 import com.example.pos.domain.model.MovimientoCajaDomain;
+import com.example.pos.domain.model.MovimientoInventarioDomain;
 import com.example.pos.domain.model.ProductoDomain;
 import com.example.pos.domain.model.SesionCajaDomain;
 import com.example.pos.domain.model.UsuarioDomain;
 import com.example.pos.domain.model.VentaDetalleDomain;
 import com.example.pos.domain.model.VentaDomain;
+import com.example.pos.domain.repository.InventarioRepositoryPort;
 import com.example.pos.domain.repository.MovimientoCajaRepositoryPort;
 import com.example.pos.domain.repository.ProductoRepositoryPort;
 import com.example.pos.domain.repository.SesionCajaRepositoryPort;
 import com.example.pos.domain.repository.UsuarioRepositoryPort;
 import com.example.pos.domain.repository.VentaRepositoryPort;
-import com.example.pos.model.MovimientoInventario;
-import com.example.pos.model.Producto;
-import com.example.pos.model.Usuario;
-import com.example.pos.repository.InventarioRepository;
-import com.example.pos.repository.MovimientoInventarioRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,8 +33,7 @@ public class AnularVentaUseCase {
     private final SesionCajaRepositoryPort sesionCajaRepositoryPort;
     private final UsuarioRepositoryPort usuarioRepositoryPort;
     private final MovimientoCajaRepositoryPort movimientoCajaRepositoryPort;
-    private final InventarioRepository inventarioRepository;
-    private final MovimientoInventarioRepository movimientoInventarioRepository;
+    private final InventarioRepositoryPort inventarioRepositoryPort;
 
     public AnularVentaUseCase(
             VentaRepositoryPort ventaRepositoryPort,
@@ -45,15 +41,13 @@ public class AnularVentaUseCase {
             SesionCajaRepositoryPort sesionCajaRepositoryPort,
             UsuarioRepositoryPort usuarioRepositoryPort,
             MovimientoCajaRepositoryPort movimientoCajaRepositoryPort,
-            InventarioRepository inventarioRepository,
-            MovimientoInventarioRepository movimientoInventarioRepository) {
+            InventarioRepositoryPort inventarioRepositoryPort) {
         this.ventaRepositoryPort = ventaRepositoryPort;
         this.productoRepositoryPort = productoRepositoryPort;
         this.sesionCajaRepositoryPort = sesionCajaRepositoryPort;
         this.usuarioRepositoryPort = usuarioRepositoryPort;
         this.movimientoCajaRepositoryPort = movimientoCajaRepositoryPort;
-        this.inventarioRepository = inventarioRepository;
-        this.movimientoInventarioRepository = movimientoInventarioRepository;
+        this.inventarioRepositoryPort = inventarioRepositoryPort;
     }
 
     @Transactional
@@ -78,27 +72,24 @@ public class AnularVentaUseCase {
                 prod.incrementarStock(det.getCantidad());
                 productoRepositoryPort.guardar(prod);
 
-                inventarioRepository.findByProductoId(prod.getId().intValue()).ifPresent(inv -> {
+                inventarioRepositoryPort.buscarPorProductoId(prod.getId()).ifPresent(inv -> {
                     inv.setStockActual(prod.getStock());
-                    inventarioRepository.save(inv);
+                    inventarioRepositoryPort.guardar(inv);
                 });
 
-                MovimientoInventario movInv = new MovimientoInventario();
-                Producto prodRef = new Producto();
-                prodRef.setId(prod.getId().intValue());
-                movInv.setProducto(prodRef);
-
-                movInv.setTipoMovimiento("ENTRADA");
-                movInv.setCantidad(det.getCantidad());
-                movInv.setFecha(LocalDateTime.now());
-                if (venta.getUsuarioId() != null) {
-                    Usuario usuRef = new Usuario();
-                    usuRef.setId(venta.getUsuarioId().intValue());
-                    movInv.setUsuario(usuRef);
-                }
-                movInv.setReferencia("ANULACION: " + venta.getCodigoFactura());
-                movInv.setObservaciones("Reingreso por anulación de venta " + venta.getCodigoFactura());
-                movimientoInventarioRepository.save(movInv);
+                MovimientoInventarioDomain movInv = new MovimientoInventarioDomain(
+                        null,
+                        prod.getId(),
+                        prod.getNombre(),
+                        "ENTRADA",
+                        det.getCantidad(),
+                        LocalDateTime.now(),
+                        venta.getUsuarioId(),
+                        venta.getUsuarioNombre(),
+                        "ANULACION: " + venta.getCodigoFactura(),
+                        "Reingreso por anulación de venta " + venta.getCodigoFactura()
+                );
+                inventarioRepositoryPort.registrarMovimiento(movInv);
             });
         }
 

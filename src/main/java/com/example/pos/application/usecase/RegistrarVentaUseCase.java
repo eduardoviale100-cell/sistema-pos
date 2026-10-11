@@ -3,12 +3,6 @@ package com.example.pos.application.usecase;
 import com.example.pos.domain.exception.*;
 import com.example.pos.domain.model.*;
 import com.example.pos.domain.repository.*;
-import com.example.pos.model.Inventario;
-import com.example.pos.model.MovimientoInventario;
-import com.example.pos.model.Producto;
-import com.example.pos.model.Usuario;
-import com.example.pos.repository.InventarioRepository;
-import com.example.pos.repository.MovimientoInventarioRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,8 +26,7 @@ public class RegistrarVentaUseCase {
     private final ProductoRepositoryPort productoRepositoryPort;
     private final MetodoPagoRepositoryPort metodoPagoRepositoryPort;
     private final MovimientoCajaRepositoryPort movimientoCajaRepositoryPort;
-    private final InventarioRepository inventarioRepository;
-    private final MovimientoInventarioRepository movimientoInventarioRepository;
+    private final InventarioRepositoryPort inventarioRepositoryPort;
 
     public RegistrarVentaUseCase(
             VentaRepositoryPort ventaRepositoryPort,
@@ -43,8 +36,7 @@ public class RegistrarVentaUseCase {
             ProductoRepositoryPort productoRepositoryPort,
             MetodoPagoRepositoryPort metodoPagoRepositoryPort,
             MovimientoCajaRepositoryPort movimientoCajaRepositoryPort,
-            InventarioRepository inventarioRepository,
-            MovimientoInventarioRepository movimientoInventarioRepository) {
+            InventarioRepositoryPort inventarioRepositoryPort) {
         this.ventaRepositoryPort = ventaRepositoryPort;
         this.sesionCajaRepositoryPort = sesionCajaRepositoryPort;
         this.usuarioRepositoryPort = usuarioRepositoryPort;
@@ -52,8 +44,7 @@ public class RegistrarVentaUseCase {
         this.productoRepositoryPort = productoRepositoryPort;
         this.metodoPagoRepositoryPort = metodoPagoRepositoryPort;
         this.movimientoCajaRepositoryPort = movimientoCajaRepositoryPort;
-        this.inventarioRepository = inventarioRepository;
-        this.movimientoInventarioRepository = movimientoInventarioRepository;
+        this.inventarioRepositoryPort = inventarioRepositoryPort;
     }
 
     @Transactional
@@ -129,10 +120,10 @@ public class RegistrarVentaUseCase {
             producto.decrementarStock(detCommand.cantidad());
             productoRepositoryPort.guardar(producto);
 
-            // Sincronizar tabla física 'inventario' legacy si existe
-            inventarioRepository.findByProductoId(producto.getId().intValue()).ifPresent(inv -> {
+            // Sincronizar tabla física 'inventario' si existe
+            inventarioRepositoryPort.buscarPorProductoId(producto.getId()).ifPresent(inv -> {
                 inv.setStockActual(producto.getStock());
-                inventarioRepository.save(inv);
+                inventarioRepositoryPort.guardar(inv);
             });
 
             // Determinar precio de venta
@@ -193,21 +184,19 @@ public class RegistrarVentaUseCase {
 
         // 10. Registrar movimiento de auditoría/kardex en movimientos_inventario
         for (VentaDetalleDomain det : ventaGuardada.getDetalles()) {
-            MovimientoInventario movInv = new MovimientoInventario();
-            Producto prodRef = new Producto();
-            prodRef.setId(det.getProductoId().intValue());
-            movInv.setProducto(prodRef);
-
-            Usuario usuRef = new Usuario();
-            usuRef.setId(usuario.getId().intValue());
-            movInv.setUsuario(usuRef);
-
-            movInv.setTipoMovimiento("SALIDA");
-            movInv.setCantidad(det.getCantidad());
-            movInv.setFecha(LocalDateTime.now());
-            movInv.setReferencia("Venta ID: " + ventaGuardada.getId());
-            movInv.setObservaciones("Salida por venta mostrador (" + ventaGuardada.getCodigoFactura() + ")");
-            movimientoInventarioRepository.save(movInv);
+            MovimientoInventarioDomain movInv = new MovimientoInventarioDomain(
+                    null,
+                    det.getProductoId(),
+                    det.getProductoNombre(),
+                    "SALIDA",
+                    det.getCantidad(),
+                    LocalDateTime.now(),
+                    usuario.getId(),
+                    usuario.getNombre(),
+                    "Venta ID: " + ventaGuardada.getId(),
+                    "Salida por venta mostrador (" + ventaGuardada.getCodigoFactura() + ")"
+            );
+            inventarioRepositoryPort.registrarMovimiento(movInv);
         }
 
         return ventaGuardada;

@@ -3,12 +3,6 @@ package com.example.pos.application.usecase;
 import com.example.pos.domain.exception.*;
 import com.example.pos.domain.model.*;
 import com.example.pos.domain.repository.*;
-import com.example.pos.model.Inventario;
-import com.example.pos.model.MovimientoInventario;
-import com.example.pos.model.Producto;
-import com.example.pos.model.Usuario;
-import com.example.pos.repository.InventarioRepository;
-import com.example.pos.repository.MovimientoInventarioRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -51,10 +45,7 @@ class VentaUseCaseTest {
     private MovimientoCajaRepositoryPort movimientoCajaRepositoryPort;
 
     @Mock
-    private InventarioRepository inventarioRepository;
-
-    @Mock
-    private MovimientoInventarioRepository movimientoInventarioRepository;
+    private InventarioRepositoryPort inventarioRepositoryPort;
 
     @InjectMocks
     private RegistrarVentaUseCase registrarVentaUseCase;
@@ -92,7 +83,7 @@ class VentaUseCaseTest {
         when(ventaRepositoryPort.contarTotalVentas()).thenReturn(42L);
         when(productoRepositoryPort.buscarPorId(5L)).thenReturn(Optional.of(productoStock));
         when(metodoPagoRepositoryPort.buscarPorId(1L)).thenReturn(Optional.of(metodoEfectivo));
-        when(inventarioRepository.findByProductoId(5)).thenReturn(Optional.of(new Inventario()));
+        when(inventarioRepositoryPort.buscarPorProductoId(5L)).thenReturn(Optional.of(new InventarioDomain()));
 
         when(ventaRepositoryPort.guardar(any(VentaDomain.class))).thenAnswer(invocation -> {
             VentaDomain v = invocation.getArgument(0);
@@ -117,7 +108,7 @@ class VentaUseCaseTest {
         assertEquals(18, productoStock.getStock()); // stock decrementado de 20 a 18
         verify(sesionCajaRepositoryPort).guardar(sesionAbierta);
         verify(movimientoCajaRepositoryPort).guardar(any(MovimientoCajaDomain.class));
-        verify(movimientoInventarioRepository).save(any(MovimientoInventario.class));
+        verify(inventarioRepositoryPort).registrarMovimiento(any(MovimientoInventarioDomain.class));
     }
 
     @Test
@@ -172,7 +163,7 @@ class VentaUseCaseTest {
         when(productoRepositoryPort.buscarPorId(5L)).thenReturn(Optional.of(productoStock));
         when(sesionCajaRepositoryPort.buscarPorId(10L)).thenReturn(Optional.of(sesionAbierta));
         when(usuarioRepositoryPort.buscarPorId(1L)).thenReturn(Optional.of(usuarioActivo));
-        when(inventarioRepository.findByProductoId(5)).thenReturn(Optional.of(new Inventario()));
+        when(inventarioRepositoryPort.buscarPorProductoId(5L)).thenReturn(Optional.of(new InventarioDomain()));
 
         when(ventaRepositoryPort.guardar(any(VentaDomain.class))).thenAnswer(i -> i.getArgument(0));
 
@@ -181,7 +172,7 @@ class VentaUseCaseTest {
         assertTrue(anulada.isAnulada());
         assertEquals(22, productoStock.getStock()); // Reintegró 2 unidades (20 + 2 = 22)
         verify(movimientoCajaRepositoryPort).guardar(any(MovimientoCajaDomain.class));
-        verify(movimientoInventarioRepository).save(any(MovimientoInventario.class));
+        verify(inventarioRepositoryPort).registrarMovimiento(any(MovimientoInventarioDomain.class));
     }
 
     @Test
