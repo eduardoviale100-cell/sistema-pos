@@ -1,6 +1,6 @@
 package com.example.pos.domain.repository;
 
-import com.example.pos.domain.model.MetodoPagoDomain;
+import com.example.pos.domain.model.metodopago.MetodoPagoDomain;
 
 import java.util.List;
 import java.util.Optional;

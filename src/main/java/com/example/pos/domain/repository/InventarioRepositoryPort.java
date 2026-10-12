@@ -1,7 +1,7 @@
 package com.example.pos.domain.repository;
 
-import com.example.pos.domain.model.InventarioDomain;
-import com.example.pos.domain.model.MovimientoInventarioDomain;
+import com.example.pos.domain.model.inventario.InventarioDomain;
+import com.example.pos.domain.model.inventario.MovimientoInventarioDomain;
 
 import java.util.List;
 import java.util.Optional;

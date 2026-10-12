@@ -1,6 +1,6 @@
 package com.example.pos.domain.repository;
 
-import com.example.pos.domain.model.ClienteDomain;
+import com.example.pos.domain.model.cliente.ClienteDomain;
 
 import java.util.List;
 import java.util.Optional;

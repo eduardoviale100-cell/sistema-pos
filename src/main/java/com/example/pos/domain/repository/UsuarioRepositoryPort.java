@@ -1,7 +1,7 @@
 package com.example.pos.domain.repository;
 
-import com.example.pos.domain.model.RolUsuario;
-import com.example.pos.domain.model.UsuarioDomain;
+import com.example.pos.domain.model.usuario.RolUsuario;
+import com.example.pos.domain.model.usuario.UsuarioDomain;
 
 import java.util.List;
 import java.util.Optional;

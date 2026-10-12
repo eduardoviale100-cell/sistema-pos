@@ -1,6 +1,6 @@
 package com.example.pos.domain.repository;
 
-import com.example.pos.domain.model.MovimientoCajaDomain;
+import com.example.pos.domain.model.caja.MovimientoCajaDomain;
 
 import java.util.List;
 import java.util.Optional;

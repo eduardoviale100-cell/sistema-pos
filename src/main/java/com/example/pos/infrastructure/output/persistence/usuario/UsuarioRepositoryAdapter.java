@@ -1,0 +1,109 @@
+package com.example.pos.infrastructure.output.persistence.usuario;
+
+import com.example.pos.domain.model.usuario.RolUsuario;
+import com.example.pos.domain.model.usuario.UsuarioDomain;
+import com.example.pos.domain.repository.UsuarioRepositoryPort;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+/**
+ * Adaptador de salida que implementa UsuarioRepositoryPort usando Spring Data JPA.
+ */
+@Component
+public class UsuarioRepositoryAdapter implements UsuarioRepositoryPort {
+
+    private final SpringDataUsuarioRepository springDataRepo;
+
+    public UsuarioRepositoryAdapter(SpringDataUsuarioRepository springDataRepo) {
+        this.springDataRepo = springDataRepo;
+    }
+
+    // â”€â”€â”€ Mappers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    public UsuarioDomain toDomain(UsuarioEntity entity) {
+        if (entity == null) return null;
+        return new UsuarioDomain(
+                entity.getId(),
+                entity.getNombre(),
+                entity.getUsername(),
+                entity.getPasswordHash(),
+                RolUsuario.fromString(entity.getRol()),
+                entity.getActivo(),
+                entity.getFechaCreacion(),
+                entity.getFechaModificacion()
+        );
+    }
+
+    public UsuarioEntity toEntity(UsuarioDomain domain) {
+        if (domain == null) return null;
+        return UsuarioEntity.builder()
+                .id(domain.getId())
+                .nombre(domain.getNombre())
+                .username(domain.getUsername())
+                .passwordHash(domain.getPasswordHash())
+                .rol(domain.getRol() != null ? domain.getRol().name() : "VENDEDOR")
+                .activo(domain.getActivo())
+                .fechaCreacion(domain.getFechaCreacion())
+                .fechaModificacion(domain.getFechaModificacion())
+                .build();
+    }
+
+    // â”€â”€â”€ Puerto implementado â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    @Override
+    public UsuarioDomain guardar(UsuarioDomain usuario) {
+        UsuarioEntity entity = toEntity(usuario);
+        UsuarioEntity guardado = springDataRepo.save(entity);
+        return toDomain(guardado);
+    }
+
+    @Override
+    public Optional<UsuarioDomain> buscarPorId(Long id) {
+        return springDataRepo.findById(id).map(this::toDomain);
+    }
+
+    @Override
+    public Optional<UsuarioDomain> buscarPorUsername(String username) {
+        return springDataRepo.findByUsernameIgnoreCase(username).map(this::toDomain);
+    }
+
+    @Override
+    public List<UsuarioDomain> listarTodos() {
+        return springDataRepo.findAll().stream()
+                .map(this::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<UsuarioDomain> listarActivos() {
+        return springDataRepo.findByActivoTrue().stream()
+                .map(this::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<UsuarioDomain> listarPorRol(RolUsuario rol) {
+        return springDataRepo.findByRol(rol.name()).stream()
+                .map(this::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public boolean existePorUsername(String username) {
+        return springDataRepo.existsByUsernameIgnoreCase(username);
+    }
+
+    @Override
+    public boolean existePorUsernameExcluyendoId(String username, Long idExcluido) {
+        return springDataRepo.existsByUsernameIgnoreCaseAndIdNot(username, idExcluido);
+    }
+
+    @Override
+    public void eliminarPorId(Long id) {
+        springDataRepo.deleteById(id);
+    }
+}
+
