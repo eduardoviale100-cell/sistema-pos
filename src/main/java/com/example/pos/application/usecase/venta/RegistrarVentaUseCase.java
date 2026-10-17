@@ -114,6 +114,14 @@ public class RegistrarVentaUseCase {
                 throw new IllegalArgumentException("La cantidad debe ser mayor a cero para el producto: " + producto.getNombre());
             }
 
+            // Sincronizar stock del producto con la tabla de inventario (fuente de verdad)
+            // para evitar desfases entre productos.stock e inventario.stock_actual
+            inventarioRepositoryPort.buscarPorProductoId(producto.getId()).ifPresent(inv -> {
+                if (inv.getStockActual() != null && !inv.getStockActual().equals(producto.getStock())) {
+                    producto.setStock(inv.getStockActual());
+                }
+            });
+
             // Validar stock disponible
             if (!producto.tieneStockSuficiente(detCommand.cantidad())) {
                 throw new StockInsuficienteVentaException(
@@ -127,7 +135,7 @@ public class RegistrarVentaUseCase {
             producto.decrementarStock(detCommand.cantidad());
             productoRepositoryPort.guardar(producto);
 
-            // Sincronizar tabla física 'inventario' si existe
+            // Sincronizar tabla física 'inventario' con el stock ya decrementado
             inventarioRepositoryPort.buscarPorProductoId(producto.getId()).ifPresent(inv -> {
                 inv.setStockActual(producto.getStock());
                 inventarioRepositoryPort.guardar(inv);

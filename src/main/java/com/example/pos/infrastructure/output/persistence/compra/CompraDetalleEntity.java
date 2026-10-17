@@ -2,12 +2,9 @@ package com.example.pos.infrastructure.output.persistence.compra;
 
 
 import com.example.pos.infrastructure.output.persistence.producto.ProductoEntity;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import java.math.BigDecimal;
 
@@ -16,7 +13,10 @@ import java.math.BigDecimal;
  */
 @Entity
 @Table(name = "compra_detalle")
-@Data
+@Getter
+@Setter
+@ToString
+@EqualsAndHashCode
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -28,11 +28,15 @@ public class CompraDetalleEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "compra_id", nullable = false)
+    @JsonBackReference
     @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private CompraEntity compra;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "producto_id", nullable = false)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private ProductoEntity producto;
 
     @Column(nullable = false)

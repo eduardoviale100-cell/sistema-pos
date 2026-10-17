@@ -31,7 +31,9 @@ public class ActualizarUsuarioRequestDto {
     @Pattern(regexp = "^[a-zA-Z0-9._-]+$", message = "El nombre de usuario solo puede contener letras, nÃºmeros, puntos, guiones y guiones bajos.")
     private String username;
 
-    // La contraseÃ±a es opcional al actualizar. Si viene vacÃ­a o null, no se cambia.
+    // La contraseña es opcional al actualizar. Si viene vacía o null, no se cambia.
+    @JsonProperty("password")
+    @JsonAlias({"contrasena", "contraseña", "password"})
     private String password;
 
     private String rol;

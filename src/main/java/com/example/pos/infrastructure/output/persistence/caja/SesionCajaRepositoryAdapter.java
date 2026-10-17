@@ -1,11 +1,6 @@
 package com.example.pos.infrastructure.output.persistence.caja;
 
-import com.example.pos.infrastructure.output.persistence.usuario.UsuarioEntity;
 import com.example.pos.infrastructure.output.persistence.usuario.UsuarioRepositoryAdapter;
-
-import com.example.pos.domain.model.caja.*;
-import com.example.pos.domain.model.caja.*;
-
 import com.example.pos.domain.model.caja.SesionCajaDomain;
 import com.example.pos.domain.repository.SesionCajaRepositoryPort;
 import org.springframework.stereotype.Repository;
@@ -14,7 +9,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Adaptador de Persistencia para SesionCaja (implementa SesionCajaRepositoryPort).
+ * Adaptador de Persistencia para SesionCaja.
+ * Implementa SesionCajaRepositoryPort delegando a Spring Data JPA.
  */
 @Repository
 public class SesionCajaRepositoryAdapter implements SesionCajaRepositoryPort {
@@ -46,7 +42,9 @@ public class SesionCajaRepositoryAdapter implements SesionCajaRepositoryPort {
 
     @Override
     public Optional<SesionCajaDomain> buscarSesionActivaPorCajaId(Long cajaId) {
-        return springDataSesionCajaRepository.findByCajaIdAndEstado(cajaId, "ABIERTA").map(this::toDomain);
+        return springDataSesionCajaRepository
+                .findFirstByCajaIdAndEstadoOrderByFechaAperturaDesc(cajaId, "ABIERTA")
+                .map(this::toDomain);
     }
 
     @Override
@@ -61,8 +59,22 @@ public class SesionCajaRepositoryAdapter implements SesionCajaRepositoryPort {
         return springDataSesionCajaRepository.existsByCajaIdAndEstado(cajaId, "ABIERTA");
     }
 
+    @Override
+    public List<SesionCajaDomain> buscarSesionesAbiertasPorCajaId(Long cajaId) {
+        return springDataSesionCajaRepository.findByCajaIdAndEstado(cajaId, "ABIERTA").stream()
+                .map(this::toDomain)
+                .toList();
+    }
+
+    @Override
+    public List<SesionCajaDomain> buscarSesionesAbiertasPorUsuarioId(Long usuarioId) {
+        return springDataSesionCajaRepository.findByUsuarioIdAndEstado(usuarioId, "ABIERTA").stream()
+                .map(this::toDomain)
+                .toList();
+    }
+
     // =========================================================================
-    // Mappings
+    // Mappers Domain <-> Entity
     // =========================================================================
 
     public SesionCajaDomain toDomain(SesionCajaEntity entity) {

@@ -19,4 +19,8 @@ public interface SesionCajaRepositoryPort {
     List<SesionCajaDomain> listarPorCajaId(Long cajaId);
 
     boolean existeSesionAbierta(Long cajaId);
+ 
+    List<SesionCajaDomain> buscarSesionesAbiertasPorCajaId(Long cajaId);
+
+    List<SesionCajaDomain> buscarSesionesAbiertasPorUsuarioId(Long usuarioId);
 }

@@ -71,6 +71,13 @@ public class AnularVentaUseCase {
         // 1. Reintegrar stock a productos y sincronizar kardex
         for (VentaDetalleDomain det : venta.getDetalles()) {
             productoRepositoryPort.buscarPorId(det.getProductoId()).ifPresent(prod -> {
+                // Sincronizar stock del producto con inventario antes de reintegrar
+                inventarioRepositoryPort.buscarPorProductoId(prod.getId()).ifPresent(inv -> {
+                    if (inv.getStockActual() != null && !inv.getStockActual().equals(prod.getStock())) {
+                        prod.setStock(inv.getStockActual());
+                    }
+                });
+
                 prod.incrementarStock(det.getCantidad());
                 productoRepositoryPort.guardar(prod);
 

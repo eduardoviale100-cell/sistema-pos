@@ -2,12 +2,9 @@ package com.example.pos.infrastructure.output.persistence.venta;
 
 
 import com.example.pos.infrastructure.output.persistence.metodopago.MetodoPagoEntity;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -17,7 +14,10 @@ import java.time.LocalDateTime;
  */
 @Entity
 @Table(name = "pagos")
-@Data
+@Getter
+@Setter
+@ToString
+@EqualsAndHashCode
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -29,11 +29,15 @@ public class PagoEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "venta_id", nullable = false)
+    @JsonBackReference
     @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private VentaEntity venta;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "metodo_pago_id", nullable = false)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private MetodoPagoEntity metodoPago;
 
     @Column(nullable = false, precision = 10, scale = 2)

@@ -30,8 +30,10 @@ public class CrearUsuarioRequestDto {
     @Pattern(regexp = "^[a-zA-Z0-9._-]+$", message = "El nombre de usuario solo puede contener letras, nÃºmeros, puntos, guiones y guiones bajos.")
     private String username;
 
-    @NotBlank(message = "La contraseÃ±a es obligatoria.")
-    @Size(min = 6, message = "La contraseÃ±a debe tener al menos 6 caracteres.")
+    @JsonProperty("password")
+    @JsonAlias({"contrasena", "contraseña", "password"})
+    @NotBlank(message = "La contraseña es obligatoria.")
+    @Size(min = 6, message = "La contraseña debe tener al menos 6 caracteres.")
     private String password;
 
     private String rol;

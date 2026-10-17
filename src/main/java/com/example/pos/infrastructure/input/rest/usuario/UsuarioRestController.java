@@ -10,11 +10,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * Controlador REST hexagonal para el mÃ³dulo Usuario.
- * Bean name diferenciado para coexistir con el controlador MVC legacy.
+ * Controlador REST hexagonal para el módulo Usuario.
+ * Mapeado a /api/usuarios y /api/v2/usuarios para total compatibilidad y coherencia.
  */
 @RestController("usuarioControllerHexagonal")
-@RequestMapping("/api/v2/usuarios")
+@RequestMapping({"/api/usuarios", "/api/v2/usuarios"})
 public class UsuarioRestController {
 
     private final CrearUsuarioUseCase crearUsuarioUseCase;
@@ -39,24 +39,29 @@ public class UsuarioRestController {
         this.eliminarUsuarioUseCase = eliminarUsuarioUseCase;
     }
 
-    // â”€â”€â”€ GET /api/v2/usuarios â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ─── GET /api/usuarios ───────────────────────────────────────────────────
     @GetMapping
-    public ResponseEntity<List<UsuarioDomain>> listar(
+    public ResponseEntity<List<UsuarioResponseDto>> listar(
             @RequestParam(required = false) Boolean soloActivos,
             @RequestParam(required = false) String rol) {
         boolean filterActivos = Boolean.TRUE.equals(soloActivos);
-        return ResponseEntity.ok(listarUsuariosUseCase.ejecutar(filterActivos, rol));
+        List<UsuarioDomain> usuarios = listarUsuariosUseCase.ejecutar(filterActivos, rol);
+        List<UsuarioResponseDto> response = usuarios.stream()
+                .map(UsuarioResponseDto::fromDomain)
+                .toList();
+        return ResponseEntity.ok(response);
     }
 
-    // â”€â”€â”€ GET /api/v2/usuarios/{id} â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ─── GET /api/usuarios/{id} ──────────────────────────────────────────────
     @GetMapping("/{id}")
-    public ResponseEntity<UsuarioDomain> buscarPorId(@PathVariable Long id) {
-        return ResponseEntity.ok(buscarUsuarioPorIdUseCase.ejecutar(id));
+    public ResponseEntity<UsuarioResponseDto> buscarPorId(@PathVariable Long id) {
+        UsuarioDomain usuario = buscarUsuarioPorIdUseCase.ejecutar(id);
+        return ResponseEntity.ok(UsuarioResponseDto.fromDomain(usuario));
     }
 
-    // â”€â”€â”€ POST /api/v2/usuarios â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ─── POST /api/usuarios ──────────────────────────────────────────────────
     @PostMapping
-    public ResponseEntity<UsuarioDomain> crear(@Valid @RequestBody CrearUsuarioRequestDto dto) {
+    public ResponseEntity<UsuarioResponseDto> crear(@Valid @RequestBody CrearUsuarioRequestDto dto) {
         CrearUsuarioCommand command = new CrearUsuarioCommand(
                 dto.getNombre(),
                 dto.getUsername(),
@@ -64,12 +69,12 @@ public class UsuarioRestController {
                 dto.getRol()
         );
         UsuarioDomain creado = crearUsuarioUseCase.ejecutar(command);
-        return ResponseEntity.status(HttpStatus.CREATED).body(creado);
+        return ResponseEntity.status(HttpStatus.CREATED).body(UsuarioResponseDto.fromDomain(creado));
     }
 
-    // â”€â”€â”€ PUT /api/v2/usuarios/{id} â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ─── PUT /api/usuarios/{id} ──────────────────────────────────────────────
     @PutMapping("/{id}")
-    public ResponseEntity<UsuarioDomain> actualizar(
+    public ResponseEntity<UsuarioResponseDto> actualizar(
             @PathVariable Long id,
             @Valid @RequestBody ActualizarUsuarioRequestDto dto) {
         ActualizarUsuarioCommand command = new ActualizarUsuarioCommand(
@@ -78,22 +83,23 @@ public class UsuarioRestController {
                 dto.getPassword(),
                 dto.getRol()
         );
-        return ResponseEntity.ok(actualizarUsuarioUseCase.ejecutar(id, command));
+        UsuarioDomain actualizado = actualizarUsuarioUseCase.ejecutar(id, command);
+        return ResponseEntity.ok(UsuarioResponseDto.fromDomain(actualizado));
     }
 
-    // â”€â”€â”€ PATCH /api/v2/usuarios/{id}/estado â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ─── PATCH /api/usuarios/{id}/estado ─────────────────────────────────────
     @PatchMapping("/{id}/estado")
-    public ResponseEntity<UsuarioDomain> cambiarEstado(
+    public ResponseEntity<UsuarioResponseDto> cambiarEstado(
             @PathVariable Long id,
             @RequestParam boolean activo) {
-        return ResponseEntity.ok(cambiarEstadoUsuarioUseCase.ejecutar(id, activo));
+        UsuarioDomain actualizado = cambiarEstadoUsuarioUseCase.ejecutar(id, activo);
+        return ResponseEntity.ok(UsuarioResponseDto.fromDomain(actualizado));
     }
 
-    // â”€â”€â”€ DELETE /api/v2/usuarios/{id} â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ─── DELETE /api/usuarios/{id} ───────────────────────────────────────────
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         eliminarUsuarioUseCase.ejecutar(id);
         return ResponseEntity.noContent().build();
     }
 }
-

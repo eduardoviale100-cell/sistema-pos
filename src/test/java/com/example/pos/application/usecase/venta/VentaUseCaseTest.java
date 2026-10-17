@@ -91,7 +91,8 @@ class VentaUseCaseTest {
         when(ventaRepositoryPort.contarTotalVentas()).thenReturn(42L);
         when(productoRepositoryPort.buscarPorId(5L)).thenReturn(Optional.of(productoStock));
         when(metodoPagoRepositoryPort.buscarPorId(1L)).thenReturn(Optional.of(metodoEfectivo));
-        when(inventarioRepositoryPort.buscarPorProductoId(5L)).thenReturn(Optional.of(new InventarioDomain()));
+        InventarioDomain invSync = new InventarioDomain(5L, "Gaseosa Cola", "PROD-001", 20, 5);
+        when(inventarioRepositoryPort.buscarPorProductoId(5L)).thenReturn(Optional.of(invSync));
 
         when(ventaRepositoryPort.guardar(any(VentaDomain.class))).thenAnswer(invocation -> {
             VentaDomain v = invocation.getArgument(0);
@@ -171,7 +172,8 @@ class VentaUseCaseTest {
         when(productoRepositoryPort.buscarPorId(5L)).thenReturn(Optional.of(productoStock));
         when(sesionCajaRepositoryPort.buscarPorId(10L)).thenReturn(Optional.of(sesionAbierta));
         when(usuarioRepositoryPort.buscarPorId(1L)).thenReturn(Optional.of(usuarioActivo));
-        when(inventarioRepositoryPort.buscarPorProductoId(5L)).thenReturn(Optional.of(new InventarioDomain()));
+        InventarioDomain invSyncAnul = new InventarioDomain(5L, "Gaseosa Cola", "PROD-001", 20, 5);
+        when(inventarioRepositoryPort.buscarPorProductoId(5L)).thenReturn(Optional.of(invSyncAnul));
 
         when(ventaRepositoryPort.guardar(any(VentaDomain.class))).thenAnswer(i -> i.getArgument(0));
 

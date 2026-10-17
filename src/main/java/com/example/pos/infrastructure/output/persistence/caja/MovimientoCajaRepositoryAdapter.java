@@ -1,11 +1,8 @@
 package com.example.pos.infrastructure.output.persistence.caja;
 
-import com.example.pos.infrastructure.output.persistence.usuario.UsuarioEntity;
 import com.example.pos.infrastructure.output.persistence.usuario.UsuarioRepositoryAdapter;
 
 import com.example.pos.domain.model.caja.*;
-import com.example.pos.domain.model.caja.*;
-
 import com.example.pos.domain.model.caja.MovimientoCajaDomain;
 import com.example.pos.domain.repository.MovimientoCajaRepositoryPort;
 import org.springframework.stereotype.Repository;

@@ -15,6 +15,7 @@ import com.example.pos.domain.repository.CajaRepositoryPort;
 import com.example.pos.domain.repository.MovimientoCajaRepositoryPort;
 import com.example.pos.domain.repository.SesionCajaRepositoryPort;
 import com.example.pos.domain.repository.UsuarioRepositoryPort;
+import com.example.pos.domain.repository.VentaRepositoryPort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -45,6 +46,9 @@ class CajaUseCaseTest {
     @Mock
     private UsuarioRepositoryPort usuarioRepositoryPort;
 
+    @Mock
+    private VentaRepositoryPort ventaRepositoryPort;
+
     private AbrirSesionCajaUseCase abrirSesionCajaUseCase;
     private CerrarSesionCajaUseCase cerrarSesionCajaUseCase;
     private RegistrarMovimientoCajaUseCase registrarMovimientoCajaUseCase;
@@ -57,7 +61,7 @@ class CajaUseCaseTest {
     @BeforeEach
     void setUp() {
         abrirSesionCajaUseCase = new AbrirSesionCajaUseCase(cajaRepositoryPort, sesionCajaRepositoryPort, usuarioRepositoryPort);
-        cerrarSesionCajaUseCase = new CerrarSesionCajaUseCase(sesionCajaRepositoryPort, cajaRepositoryPort);
+        cerrarSesionCajaUseCase = new CerrarSesionCajaUseCase(sesionCajaRepositoryPort, cajaRepositoryPort, ventaRepositoryPort, movimientoCajaRepositoryPort);
         registrarMovimientoCajaUseCase = new RegistrarMovimientoCajaUseCase(sesionCajaRepositoryPort, movimientoCajaRepositoryPort, usuarioRepositoryPort);
         obtenerSesionActivaUseCase = new ObtenerSesionActivaUseCase(sesionCajaRepositoryPort);
 
@@ -67,10 +71,9 @@ class CajaUseCaseTest {
     }
 
     @Test
-    @DisplayName("Abrir sesiÃ³n exitosamente")
+    @DisplayName("Abrir sesión exitosamente")
     void abrirSesion_Exitoso() {
         when(cajaRepositoryPort.buscarPorId(1L)).thenReturn(Optional.of(cajaCerrada));
-        when(sesionCajaRepositoryPort.existeSesionAbierta(1L)).thenReturn(false);
         when(usuarioRepositoryPort.buscarPorId(1L)).thenReturn(Optional.of(usuarioActivo));
         when(cajaRepositoryPort.guardar(any(CajaDomain.class))).thenAnswer(i -> i.getArgument(0));
         when(sesionCajaRepositoryPort.guardar(any(SesionCajaDomain.class))).thenAnswer(i -> i.getArgument(0));
@@ -87,13 +90,25 @@ class CajaUseCaseTest {
     }
 
     @Test
-    @DisplayName("Lanzar excepciÃ³n al intentar abrir caja que ya estÃ¡ abierta")
-    void abrirSesion_CajaYaAbierta_LanzaExcepcion() {
-        when(cajaRepositoryPort.buscarPorId(2L)).thenReturn(Optional.of(cajaAbierta));
+    @DisplayName("Tolerancia: al abrir caja con sesiones abiertas previas, auto-cierra sesiones anteriores y abre nueva sesión")
+    void abrirSesion_CajaConSesionPrevia_AutoCierraSesionAnterior() {
+        SesionCajaDomain sesionAnterior = SesionCajaDomain.iniciar(cajaAbierta, usuarioActivo, new BigDecimal("80.00"), LocalDateTime.now().minusHours(2));
+        sesionAnterior.setId(99L);
 
-        assertThrows(CajaYaAbiertaException.class, () ->
-                abrirSesionCajaUseCase.ejecutar(2L, 1L, new BigDecimal("50.00"))
-        );
+        when(cajaRepositoryPort.buscarPorId(2L)).thenReturn(Optional.of(cajaAbierta));
+        when(usuarioRepositoryPort.buscarPorId(1L)).thenReturn(Optional.of(usuarioActivo));
+        when(sesionCajaRepositoryPort.buscarSesionesAbiertasPorCajaId(2L)).thenReturn(java.util.List.of(sesionAnterior));
+        when(cajaRepositoryPort.guardar(any(CajaDomain.class))).thenAnswer(i -> i.getArgument(0));
+        when(sesionCajaRepositoryPort.guardar(any(SesionCajaDomain.class))).thenAnswer(i -> i.getArgument(0));
+
+        SesionCajaDomain nuevaSesion = abrirSesionCajaUseCase.ejecutar(2L, 1L, new BigDecimal("50.00"));
+
+        assertNotNull(nuevaSesion);
+        assertEquals("ABIERTA", nuevaSesion.getEstado());
+        assertEquals(new BigDecimal("50.00"), nuevaSesion.getMontoInicial());
+        assertEquals("CERRADA", sesionAnterior.getEstado());
+        verify(sesionCajaRepositoryPort).guardar(sesionAnterior);
+        verify(sesionCajaRepositoryPort).guardar(nuevaSesion);
     }
 
     @Test

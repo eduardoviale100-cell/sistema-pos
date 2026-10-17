@@ -1,6 +1,8 @@
 package com.example.pos.infrastructure.input.rest.venta;
 
 import com.example.pos.domain.exception.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -11,10 +13,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Manejador global de excepciones para el adaptador REST del mÃ³dulo Ventas.
+ * Manejador global de excepciones para el adaptador REST del modulo Ventas.
  */
 @RestControllerAdvice(assignableTypes = VentaRestController.class)
 public class VentaRestExceptionHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(VentaRestExceptionHandler.class);
 
     @ExceptionHandler(VentaNoEncontradaException.class)
     public ResponseEntity<Map<String, Object>> handleVentaNoEncontrada(VentaNoEncontradaException ex) {
@@ -55,7 +59,7 @@ public class VentaRestExceptionHandler {
     @ExceptionHandler(SesionCajaNoAbiertaException.class)
     public ResponseEntity<Map<String, Object>> handleSesionCajaNoAbierta(SesionCajaNoAbiertaException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
-                "error", "SesiÃ³n de Caja Inactiva",
+                "error", "Sesion de Caja Inactiva",
                 "mensaje", ex.getMessage(),
                 "status", HttpStatus.CONFLICT.value()
         ));
@@ -78,7 +82,7 @@ public class VentaRestExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                "error", "Solicitud InvÃ¡lida",
+                "error", "Solicitud Invalida",
                 "mensaje", ex.getMessage(),
                 "status", HttpStatus.BAD_REQUEST.value()
         ));
@@ -101,10 +105,25 @@ public class VentaRestExceptionHandler {
         );
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                "error", "Error de ValidaciÃ³n",
+                "error", "Error de Validacion",
                 "detalles", errores,
                 "status", HttpStatus.BAD_REQUEST.value()
         ));
     }
-}
 
+    /**
+     * Catch-all: captura CUALQUIER excepcion o error no manejado por los handlers anteriores.
+     * Registra la traza completa en los logs del servidor para diagnostico
+     * y devuelve un cuerpo JSON estructurado en lugar de la pagina de error por defecto de Spring.
+     */
+    @ExceptionHandler(Throwable.class)
+    public ResponseEntity<Map<String, Object>> handleGenericThrowable(Throwable ex) {
+        log.error(">>> ERROR NO CONTROLADO en modulo Ventas: {} - {}", ex.getClass().getName(), ex.getMessage(), ex);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                "error", "Error Interno del Servidor",
+                "mensaje", ex.getMessage() != null ? ex.getMessage() : "Error inesperado al procesar la venta.",
+                "tipo", ex.getClass().getSimpleName(),
+                "status", HttpStatus.INTERNAL_SERVER_ERROR.value()
+        ));
+    }
+}

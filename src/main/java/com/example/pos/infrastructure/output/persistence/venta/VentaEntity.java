@@ -5,11 +5,9 @@ import com.example.pos.infrastructure.output.persistence.usuario.UsuarioEntity;
 import com.example.pos.infrastructure.output.persistence.cliente.ClienteEntity;
 import com.example.pos.infrastructure.output.persistence.caja.SesionCajaEntity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -21,7 +19,10 @@ import java.util.Set;
  */
 @Entity
 @Table(name = "ventas")
-@Data
+@Getter
+@Setter
+@ToString
+@EqualsAndHashCode
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -33,14 +34,20 @@ public class VentaEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cliente_id")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private ClienteEntity cliente;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", nullable = false)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private UsuarioEntity usuario;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sesion_caja_id", nullable = false)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private SesionCajaEntity sesionCaja;
 
     @Column(name = "codigo_factura", unique = true, length = 30)
@@ -56,10 +63,16 @@ public class VentaEntity {
 
     @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
+    @JsonManagedReference
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Set<VentaDetalleEntity> detalles = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
+    @JsonManagedReference
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Set<PagoEntity> pagos = new LinkedHashSet<>();
 
     @PrePersist

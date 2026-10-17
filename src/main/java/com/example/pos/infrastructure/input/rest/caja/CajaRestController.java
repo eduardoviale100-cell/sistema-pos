@@ -1,9 +1,6 @@
 package com.example.pos.infrastructure.input.rest.caja;
 
 import com.example.pos.application.usecase.caja.*;
-import com.example.pos.domain.model.caja.*;
-
-import com.example.pos.application.usecase.caja.*;
 import com.example.pos.domain.model.caja.CajaDomain;
 import com.example.pos.domain.model.caja.MovimientoCajaDomain;
 import com.example.pos.domain.model.caja.SesionCajaDomain;
@@ -29,6 +26,7 @@ public class CajaRestController {
     private final AbrirSesionCajaUseCase abrirSesionCajaUseCase;
     private final CerrarSesionCajaUseCase cerrarSesionCajaUseCase;
     private final ObtenerSesionActivaUseCase obtenerSesionActivaUseCase;
+    private final ObtenerEstadoCajaUseCase obtenerEstadoCajaUseCase;
     private final RegistrarMovimientoCajaUseCase registrarMovimientoCajaUseCase;
     private final ListarMovimientosCajaUseCase listarMovimientosCajaUseCase;
 
@@ -40,6 +38,7 @@ public class CajaRestController {
             AbrirSesionCajaUseCase abrirSesionCajaUseCase,
             CerrarSesionCajaUseCase cerrarSesionCajaUseCase,
             ObtenerSesionActivaUseCase obtenerSesionActivaUseCase,
+            ObtenerEstadoCajaUseCase obtenerEstadoCajaUseCase,
             RegistrarMovimientoCajaUseCase registrarMovimientoCajaUseCase,
             ListarMovimientosCajaUseCase listarMovimientosCajaUseCase) {
         this.listarCajasUseCase = listarCajasUseCase;
@@ -49,6 +48,7 @@ public class CajaRestController {
         this.abrirSesionCajaUseCase = abrirSesionCajaUseCase;
         this.cerrarSesionCajaUseCase = cerrarSesionCajaUseCase;
         this.obtenerSesionActivaUseCase = obtenerSesionActivaUseCase;
+        this.obtenerEstadoCajaUseCase = obtenerEstadoCajaUseCase;
         this.registrarMovimientoCajaUseCase = registrarMovimientoCajaUseCase;
         this.listarMovimientosCajaUseCase = listarMovimientosCajaUseCase;
     }
@@ -99,6 +99,11 @@ public class CajaRestController {
         return obtenerSesionActivaUseCase.ejecutar(cajaId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/{cajaId}/estado-actual")
+    public ResponseEntity<EstadoActualCajaDto> obtenerEstadoActual(@PathVariable Long cajaId) {
+        return ResponseEntity.ok(obtenerEstadoCajaUseCase.ejecutar(cajaId));
     }
 
     @PostMapping("/sesiones/{sesionId}/movimientos")

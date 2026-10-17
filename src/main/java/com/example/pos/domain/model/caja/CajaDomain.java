@@ -33,9 +33,6 @@ public class CajaDomain {
     }
 
     public void abrir() {
-        if ("ABIERTA".equalsIgnoreCase(this.estado)) {
-            throw new IllegalStateException("La caja ya se encuentra en estado ABIERTA.");
-        }
         this.estado = "ABIERTA";
     }
 

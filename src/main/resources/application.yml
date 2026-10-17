@@ -38,6 +38,7 @@ spring:
 
   flyway:
     enabled: true
+    encoding: UTF-8
 
 logging:
   level:
